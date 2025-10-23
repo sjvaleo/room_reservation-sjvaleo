@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Search • Room Reservation</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body class="container">
+  <div class="page">
+    <header class="page-header">
+      <h1>Find a Room</h1>
+      <div class="nav">
+        <a class="btn" th:href="@{/floors}">Browse Floors</a>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button type="submit" class="btn">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <section class="section">
+      <form th:action="@{/search}" method="post" class="form">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <div class="form-grid">
+          <label>Date
+            <input type="date" name="date" th:value="${date}" required />
+          </label>
+          <label>Start time
+            <input type="time" name="start" value="09:00" required />
+          </label>
+          <label>End time
+            <input type="time" name="end" value="10:00" required />
+          </label>
+          <label>Minimum capacity
+            <input type="number" min="1" step="1" name="minCapacity" value="2" />
+          </label>
+          <label>
+            <input type="checkbox" name="needsTv" /> Needs TV
+          </label>
+          <label>
+            <input type="checkbox" name="needsWhiteboard" /> Needs Whiteboard
+          </label>
+        </div>
+
+        <div class="nav" style="justify-content:flex-end;margin-top:6px">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</body>
+</html>

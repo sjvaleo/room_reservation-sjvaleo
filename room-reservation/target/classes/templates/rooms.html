@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rooms • Room Reservation</title>
+  <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body class="container">
+  <a th:href="@{/floors}">← Floors</a>
+  <h2>Rooms</h2>
+
+  <div class="grid">
+    <a class="card" th:each="r : ${rooms}" th:href="@{'/rooms/' + ${r.id}}">
+      <div class="title" th:text="${r.name}">Room</div>
+      <div class="meta">
+        <span th:text="${'Capacity: ' + r.capacity}">Capacity</span>, 
+        <span th:text="${'TVs: ' + r.tvCount}">TVs</span>, 
+        <span th:text="${r.whiteboard ? 'Whiteboard' : 'No Whiteboard'}">WB</span>
+      </div>
+    </a>
+  </div>
+</body>
+</html>
