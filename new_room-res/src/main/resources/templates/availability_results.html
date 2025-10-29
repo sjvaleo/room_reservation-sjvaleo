@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Available Rooms</title>
+    <meta charset="UTF-8"/>
+</head>
+<body>
+<h1>Available Rooms</h1>
+
+<p>
+  <strong th:text="${date}">DATE</strong>,
+  <span th:text="${time}">TIME</span> for
+  <span th:text="${durationMinutes}">60</span> minutes
+</p>
+
+<div th:if="${#lists.isEmpty(availableRooms)}">
+    <p>No rooms are available for that time. <a th:href="@{/availability}">Search again</a>.</p>
+</div>
+
+<table th:if="${!#lists.isEmpty(availableRooms)}" border="1" cellpadding="6">
+    <thead>
+    <tr>
+        <th>Room</th>
+        <th>Capacity</th>
+        <th>TVs</th>
+        <th>Whiteboard</th>
+        <th>Book</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="r : ${availableRooms}">
+        <td th:text="${r.name}">Room Name</td>
+        <td th:text="${r.capacity}">0</td>
+        <td th:text="${r.tvCount}">0</td>
+        <td th:text="${r.hasWhiteboard} ? 'Yes' : 'No'">Yes</td>
+        <td>
+            <form th:action="@{/book}" method="post" style="display:inline;">
+                <input type="hidden" name="roomId" th:value="${r.id}"/>
+                <input type="hidden" name="date" th:value="${date}"/>
+                <input type="hidden" name="time" th:value="${time}"/>
+                <input type="hidden" name="durationMinutes" th:value="${durationMinutes}"/>
+                <input type="text" name="bookedBy" placeholder="Your name (optional)"/>
+                <button type="submit">Book</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<p><a th:href="@{/availability}">← Change search</a> | <a th:href="@{/}">Home</a></p>
+</body>
+</html>
