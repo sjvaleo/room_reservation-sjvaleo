@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <title th:text="${room.name} + ' • Room Reservation'">Room</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" th:href="@{/styles.css}" />
+  <th:block th:replace="~{_header.css :: *}"></th:block>
 </head>
 <body class="container">
   <div class="page">
     <header class="page-header">
-      <a class="btn" th:href="@{'/rooms/by-floor/' + ${room.floor.id}}">← Back to Rooms</a>
-      <div class="nav">
-        <a class="btn" th:href="@{/search}">Search</a>
-        <form th:action="@{/logout}" method="post" style="display:inline">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-          <button type="submit" class="btn">Log out</button>
-        </form>
+      <button class="hamburger" id="menuBtn" aria-label="Menu">☰</button>
+      <div class="menu-panel" id="menuPanel">
+        <a th:href="@{/bookings}">My Bookings</a>
+        <a th:href="@{/search}">Search</a>
+        <form th:action="@{/logout}" method="post" style="margin:0;"><button type="submit" class="btn" style="width:100%;">Log out</button></form>
+      </div>
+      <div class="header-actions">
+        <a class="btn" th:href="@{'/rooms/by-floor/' + ${room.floor.id}}">Back to Rooms</a>
       </div>
     </header>
 
@@ -26,29 +27,32 @@
         <span><b th:text="${room.tvCount}">1</b> TV</span>
         <span th:text="${room.whiteboard ? 'Whiteboard' : 'No Whiteboard'}">Whiteboard</span>
       </p>
+    </section>
 
-      <form method="get" class="form" style="margin-top:12px">
-        <label for="date">Date
-          <input id="date" name="date" type="date" th:value="${date}" />
-        </label>
-        <div class="nav" style="justify-content:flex-start">
-          <button type="submit" class="btn">View</button>
-        </div>
-      </form>
+    <section class="section" th:if="${date != null || start != null}">
+      <h3>Selected criteria</h3>
+      <p style="margin:6px 0;">
+        <span th:if="${date != null}"><b>Date:</b> <span th:text="${date}">yyyy-mm-dd</span></span>
+        <span th:if="${start != null}" style="margin-left:12px;"><b>Start:</b> <span th:text="${start}">HH:mm</span></span>
+        <span th:if="${durationMinutes != null}" style="margin-left:12px;"><b>Duration:</b> <span th:text="${durationMinutes}">60</span> min</span>
+      </p>
     </section>
 
     <section class="section">
-      <h2 th:text="${#temporals.format(date, 'EEEE, MMM d, yyyy')}">Date</h2>
-      <div class="slots" style="margin-top:10px">
-        <div class="slot" th:each="s : ${slots}"
-             th:classappend="${s.status} == 'booked' ? ' booked' : ' available'">
-          <span th:text="${#temporals.format(s.start, 'HH:mm')}">08:00</span>–
-          <span th:text="${#temporals.format(s.end, 'HH:mm')}">08:30</span>
-          <b th:text="${s.status}">available</b>
+      <h3>Book this room</h3>
+      <form th:action="@{/book}" method="post" class="form" style="margin-top:12px">
+        <input type="hidden" name="roomId" th:value="${room.id}" />
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <label>Date <input id="date" name="date" type="date" th:value="${date}" required /></label>
+        <label>Start Time <input id="time" name="time" type="time" th:value="${start}" required /></label>
+        <label>Duration (minutes) <input id="durationMinutes" name="durationMinutes" type="number" min="15" step="15" th:value="${durationMinutes != null ? durationMinutes : 60}" required /></label>
+        <div class="nav" style="justify-content:flex-start; gap:10px; margin-top:8px;">
+          <button type="submit" class="btn">Book</button>
+          <a class="btn" th:href="@{'/rooms/by-floor/' + ${room.floor.id}}">Back to Rooms</a>
         </div>
-      </div>
-      <p class="hint" style="margin-top:8px">Booking will come in Sprint 2.</p>
+      </form>
     </section>
   </div>
+  <th:block th:replace="~{_header.script :: *}"></th:block>
 </body>
 </html>

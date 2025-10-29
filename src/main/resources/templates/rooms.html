@@ -4,20 +4,33 @@
   <meta charset="UTF-8" />
   <title>Rooms • Room Reservation</title>
   <link rel="stylesheet" th:href="@{/styles.css}" />
+  <th:block th:replace="~{_header.css :: *}"></th:block>
 </head>
 <body class="container">
-  <a th:href="@{/floors}">← Floors</a>
-  <h2>Rooms</h2>
-
-  <div class="grid">
-    <a class="card" th:each="r : ${rooms}" th:href="@{'/rooms/' + ${r.id}}">
-      <div class="title" th:text="${r.name}">Room</div>
-      <div class="meta">
-        <span th:text="${'Capacity: ' + r.capacity}">Capacity</span>, 
-        <span th:text="${'TVs: ' + r.tvCount}">TVs</span>, 
-        <span th:text="${r.whiteboard ? 'Whiteboard' : 'No Whiteboard'}">WB</span>
+  <div class="page">
+    <header class="page-header">
+      <button class="hamburger" id="menuBtn" aria-label="Menu">☰</button>
+      <div class="menu-panel" id="menuPanel">
+        <a th:href="@{/bookings}">My Bookings</a>
+        <a th:href="@{/search}">Search</a>
+        <form th:action="@{/logout}" method="post" style="margin:0;"><button type="submit" class="btn" style="width:100%;">Log out</button></form>
       </div>
-    </a>
+      <div class="header-actions">
+        <a class="btn" th:href="@{/floors}">Back to Floors</a>
+      </div>
+    </header>
+
+    <div class="grid" style="margin-top:16px;">
+      <a class="card" th:each="r : ${rooms}" th:href="@{'/rooms/' + ${r.id}}">
+        <div class="title" th:text="${r.name}">Room</div>
+        <div class="meta">
+          <span th:text="${'Capacity: ' + r.capacity}">Capacity</span>, 
+          <span th:text="${'TVs: ' + r.tvCount}">TVs</span>, 
+          <span th:text="${r.whiteboard ? 'Whiteboard' : 'No Whiteboard'}">WB</span>
+        </div>
+      </a>
+    </div>
   </div>
+  <th:block th:replace="~{_header.script :: *}"></th:block>
 </body>
 </html>

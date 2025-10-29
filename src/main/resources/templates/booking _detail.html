@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reservation Details</title>
+  <link rel="stylesheet" th:href="@{/styles.css}" />
+  <th:block th:replace="~{_header.css :: *}"></th:block>
+</head>
+<body class="container">
+  <div class="page">
+    <header class="page-header">
+      <button class="hamburger" id="menuBtn" aria-label="Menu">☰</button>
+      <div class="menu-panel" id="menuPanel">
+        <a th:href="@{/bookings}">My Bookings</a>
+        <a th:href="@{/search}">Search</a>
+        <form th:action="@{/logout}" method="post" style="margin:0;"><button type="submit" class="btn" style="width:100%;">Log out</button></form>
+      </div>
+      <div class="header-actions">
+        <a class="btn" th:href="@{/bookings}">My Bookings</a>
+        <a class="btn" th:href="@{/search}">Search</a>
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>Reservation Details</h2>
+
+      <div class="card" style="padding:12px; margin-top:12px;">
+        <div><b>Room:</b> <span th:text="${booking.room.name}">Room</span></div>
+        <div><b>Date:</b> <span th:text="${#temporals.format(booking.startDateTime, 'EEEE, MMM d, yyyy')}">Date</span></div>
+        <div><b>Start:</b> <span th:text="${#temporals.format(booking.startDateTime, 'HH:mm')}">00:00</span>
+          &nbsp;&nbsp;<b>End:</b> <span th:text="${#temporals.format(booking.endDateTime, 'HH:mm')}">00:00</span>
+        </div>
+        <div><b>Booked By:</b> <span th:text="${booking.bookedBy}">user</span></div>
+      </div>
+
+      <h3 style="margin-top:16px;">Edit Reservation</h3>
+      <form th:action="@{/bookings/{id}/update(id=${booking.id})}" method="post" class="form" style="max-width:520px;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <label>Date <input type="date" name="date" th:value="${date}" required /></label>
+          <label>Start <input type="time" name="time" th:value="${time}" required /></label>
+          <label>Duration (minutes) <input type="number" name="durationMinutes" min="15" step="15" th:value="${durationMinutes}" required /></label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button type="submit" class="btn">Save Changes</button>
+          <a class="btn" th:href="@{/bookings/{id}(id=${booking.id})}">Cancel</a>
+        </div>
+      </form>
+
+      <h3 style="margin-top:16px;">Cancel Reservation</h3>
+      <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post" onsubmit="return confirm('Cancel this reservation?');">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="btn" style="background:#ef4444;border-color:#ef4444;">Cancel Reservation</button>
+      </form>
+    </section>
+  </div>
+  <th:block th:replace="~{_header.script :: *}"></th:block>
+</body>
+</html>
