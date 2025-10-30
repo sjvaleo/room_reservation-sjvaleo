@@ -17,32 +17,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain web(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/", "/search",
-                    "/availability", "/availability/**",
-                    "/rooms/**", "/floors/**",
-                    "/login"
-                ).permitAll()
-                .requestMatchers(
-                    "/styles.css", "/favicon.ico", "/images/**", "/js/**", "/css/**", "/webjars/**"
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
-            .formLogin(login -> login
-                .loginPage("/login")
-                .defaultSuccessUrl("/search", true)  // after login, go to search
-                .failureUrl("/login?error")
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/")
-                .deleteCookies("JSESSIONID")
-                .permitAll()
-            )
-            .csrf(Customizer.withDefaults());
-
+          .authorizeHttpRequests(auth -> auth
+              .requestMatchers(
+                  "/", "/search", "/availability", "/availability/**",
+                  "/rooms/**", "/floors/**", "/login",
+                  // make sure our static stylesheet is always public
+                  "/styles.css", "/css/**", "/js/**", "/images/**"
+              ).permitAll()
+              .anyRequest().authenticated()
+          )
+          .formLogin(form -> form
+              .loginPage("/login")
+              // after login, we'll check for a pending booking
+              .defaultSuccessUrl("/post-login", false)
+              .permitAll()
+          )
+          .logout(logout -> logout
+              .logoutUrl("/logout")
+              .logoutSuccessUrl("/search")
+              .deleteCookies("JSESSIONID")
+              .permitAll()
+          )
+          .csrf(Customizer.withDefaults());
         return http.build();
     }
 

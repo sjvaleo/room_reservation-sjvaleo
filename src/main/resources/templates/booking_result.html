@@ -5,6 +5,8 @@
     <meta charset="UTF-8"/>
 </head>
 <body>
+<th:block th:replace="~{fragments :: appHeader}"></th:block>
+
 <h1 th:text="${success} ? 'Success' : 'Booking Issue'">Result</h1>
 <p th:text="${message}">Message</p>
 

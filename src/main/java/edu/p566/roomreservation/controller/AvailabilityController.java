@@ -3,6 +3,7 @@ package edu.p566.roomreservation.controller;
 import edu.p566.roomreservation.entity.Room;
 import edu.p566.roomreservation.repo.FloorRepository;
 import edu.p566.roomreservation.service.ReservationService;
+import edu.p566.roomreservation.dto.PendingBooking;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +14,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping
@@ -32,42 +35,24 @@ public class AvailabilityController {
         return "availability";
     }
 
-    // Accept BOTH GET and POST for results to make links/forms flexible
-    @RequestMapping(value = "/availability/results", method = {RequestMethod.GET, RequestMethod.POST})
+    @PostMapping("/availability/results")
     public String availabilityResults(Model model,
                                       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                       @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime time,
-                                      @RequestParam(defaultValue = "60") Integer durationMinutes,
-                                      @RequestParam(required = false) Long floorId,
-                                      // optional filters coming from search.html
-                                      @RequestParam(required = false) Integer minCapacity,
-                                      @RequestParam(required = false, defaultValue = "false") boolean hasWhiteboard,
-                                      @RequestParam(required = false) Integer minTv) {
+                                      @RequestParam(defaultValue = "60") int durationMinutes,
+                                      @RequestParam(required = false) Long floorId) {
 
         LocalDateTime start = LocalDateTime.of(date, time);
-        LocalDateTime end = start.plusMinutes(durationMinutes != null ? durationMinutes : 60);
+        LocalDateTime end = start.plusMinutes(durationMinutes);
 
-        // Base availability query
         List<Room> available = reservationService.findAvailableRooms(start, end, floorId);
-
-        // Apply optional filters (null-safe)
-        List<Room> filtered = available.stream()
-                .filter(r -> (minCapacity == null) || (r.getCapacity() == null) || r.getCapacity() >= minCapacity)
-                .filter(r -> !hasWhiteboard || Boolean.TRUE.equals(r.getWhiteboard()))
-                .filter(r -> (minTv == null) || (r.getTvCount() == null) || r.getTvCount() >= minTv)
-                .toList();
-
-        model.addAttribute("availableRooms", filtered);
+        model.addAttribute("availableRooms", available);
         model.addAttribute("date", date);
         model.addAttribute("time", time);
         model.addAttribute("durationMinutes", durationMinutes);
         model.addAttribute("floorId", floorId);
 
-        model.addAttribute("minCapacity", minCapacity);
-        model.addAttribute("hasWhiteboard", hasWhiteboard);
-        model.addAttribute("minTv", minTv);
-
-        return "availability_results"; // NOTE: plural file name
+        return "availability_results";
     }
 
     @PostMapping("/book")
@@ -76,18 +61,19 @@ public class AvailabilityController {
                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                            @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime time,
                            @RequestParam int durationMinutes,
-                           Principal principal) {
+                           Principal principal,
+                           HttpSession session) {
+
+        // If not logged in, stash the request and go to login
+        if (principal == null) {
+            session.setAttribute("PENDING_BOOK", new PendingBooking(roomId, date, time, durationMinutes));
+            return "redirect:/login";
+        }
 
         LocalDateTime start = LocalDateTime.of(date, time);
         LocalDateTime end = start.plusMinutes(durationMinutes);
 
-        var booking = reservationService.book(
-                roomId,
-                start,
-                end,
-                principal != null ? principal.getName() : "Guest"
-        );
-
+        var booking = reservationService.book(roomId, start, end, principal.getName());
         return "redirect:/bookings/confirm/" + booking.getId();
     }
 }
