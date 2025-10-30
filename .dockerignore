@@ -1,13 +1,10 @@
-# Git & IDE
-.git
+target/
+.git/
 .gitignore
-.vscode
-.idea
+README.md
+Dockerfile
+docker-compose.yml
 *.iml
-
-# Build artifacts & caches
-target
-.mvn/wrapper/maven-wrapper.jar
-
-# Node stuff
-node_modules
+.idea/
+.vscode/
+reservation.db
