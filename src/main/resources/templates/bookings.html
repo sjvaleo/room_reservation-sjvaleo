@@ -4,42 +4,37 @@
   <meta charset="UTF-8" />
   <title>My Bookings</title>
   <link rel="stylesheet" th:href="@{/styles.css}" />
-  <th:block th:replace="~{_header.css :: *}"></th:block>
 </head>
 <body class="container">
   <div class="page">
-    <header class="page-header">
-      <button class="hamburger" id="menuBtn" aria-label="Menu">☰</button>
-      <div class="menu-panel" id="menuPanel">
-        <a th:href="@{/bookings}">My Bookings</a>
-        <a th:href="@{/search}">Search</a>
-        <form th:action="@{/logout}" method="post" style="margin:0;"><button type="submit" class="btn" style="width:100%;">Log out</button></form>
-      </div>
-      <div class="header-actions">
-        <a class="btn" th:href="@{/search}">Search</a>
-      </div>
-    </header>
+    <th:block th:replace="~{fragments :: site_header}"></th:block>
 
     <section class="section">
       <h2>My Bookings</h2>
       <p th:text="'Signed in as ' + ${who}">Signed in as</p>
 
-      <div th:if="${#lists.isEmpty(bookings)}" style="margin-top:8px;">You have no bookings yet.</div>
+      <div th:if="${#lists.isEmpty(bookings)}" style="margin-top:8px;">
+        You have no bookings yet.
+      </div>
 
       <div class="grid" style="margin-top:12px; gap:12px;" th:if="${!#lists.isEmpty(bookings)}">
         <div class="card" style="padding:12px;" th:each="b : ${bookings}">
           <div><b>Room:</b> <span th:text="${b.room.name}">Room</span></div>
-          <div><b>Date:</b> <span th:text="${#temporals.format(b.startDateTime, 'EEEE, MMM d, yyyy')}">Date</span></div>
-          <div><b>Start:</b> <span th:text="${#temporals.format(b.startDateTime, 'HH:mm')}">00:00</span>
-              &nbsp;&nbsp;<b>End:</b> <span th:text="${#temporals.format(b.endDateTime, 'HH:mm')}">00:00</span>
+          <div><b>Date:</b>
+            <span th:text="${#temporals.format(b.startDateTime, 'EEEE, MMM d, yyyy')}">Date</span>
           </div>
+          <div><b>Start:</b>
+            <span th:text="${#temporals.format(b.startDateTime, 'HH:mm')}">00:00</span>
+            &nbsp;&nbsp;<b>End:</b>
+            <span th:text="${#temporals.format(b.endDateTime, 'HH:mm')}">00:00</span>
+          </div>
+          <div><b>Booked By:</b> <span th:text="${b.bookedBy}">user</span></div>
           <div style="margin-top:8px;">
-            <a class="btn" th:href="@{/bookings/{id}(id=${b.id})}">View Details</a>
+            <a class="btn" th:href="@{|/bookings/${b.id}|}">View Details</a>
           </div>
         </div>
       </div>
     </section>
   </div>
-  <th:block th:replace="~{_header.script :: *}"></th:block>
 </body>
 </html>

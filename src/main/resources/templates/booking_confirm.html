@@ -4,26 +4,21 @@
   <meta charset="UTF-8" />
   <title>Room Reservation Confirmed</title>
   <link rel="stylesheet" th:href="@{/styles.css}" />
-  <th:block th:replace="~{_header.css :: *}"></th:block>
+  <style>
+    .banner { background:#ecfdf5; border:1px solid #10b981; color:#065f46; padding:10px 12px; border-radius:10px; margin:8px 0; }
+    .card-actions { display:flex; gap:8px; margin-top:12px; }
+  </style>
 </head>
 <body class="container">
   <div class="page">
-    <header class="page-header">
-      <button class="hamburger" id="menuBtn" aria-label="Menu">☰</button>
-      <div class="menu-panel" id="menuPanel">
-        <a th:href="@{/bookings}">My Bookings</a>
-        <a th:href="@{/search}">Search</a>
-        <form th:action="@{/logout}" method="post" style="margin:0;"><button type="submit" class="btn" style="width:100%;">Log out</button></form>
-      </div>
-      <div class="header-actions">
-        <a class="btn" th:href="@{/bookings}">My Bookings</a>
-        <a class="btn" th:href="@{/search}">Search</a>
-      </div>
-    </header>
+    <th:block th:replace="~{fragments :: site_header}"></th:block>
 
     <section class="section">
+      <div class="banner">
+        <strong>Room Reservation Confirmed</strong>
+      </div>
+
       <div class="card" style="padding:12px; margin-top:12px;">
-        <h2 style="margin-top:0;">Room Reservation Confirmed</h2>
         <div><b>Room:</b> <span th:text="${booking.room.name}">Room</span></div>
         <div><b>Date:</b>
           <span th:text="${#temporals.format(booking.startDateTime, 'EEEE, MMM d, yyyy')}">Date</span>
@@ -35,14 +30,13 @@
         </div>
         <div><b>Booked By:</b> <span th:text="${booking.bookedBy}">user</span></div>
 
-        <div class="header-actions" style="margin-top:12px; justify-content:flex-start;">
-          <a class="btn" th:href="@{/bookings/{id}(id=${booking.id})}">View Details</a>
+        <div class="card-actions">
+          <a class="btn" th:href="@{|/bookings/${booking.id}|}">View Details</a>
           <a class="btn" th:href="@{/bookings}">My Bookings</a>
           <a class="btn" th:href="@{/search}">Book Another Room</a>
         </div>
       </div>
     </section>
   </div>
-  <th:block th:replace="~{_header.script :: *}"></th:block>
 </body>
 </html>
