@@ -32,24 +32,42 @@ public class AvailabilityController {
         return "availability";
     }
 
-    @PostMapping("/availability/results")
+    // Accept BOTH GET and POST for results to make links/forms flexible
+    @RequestMapping(value = "/availability/results", method = {RequestMethod.GET, RequestMethod.POST})
     public String availabilityResults(Model model,
                                       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                       @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime time,
-                                      @RequestParam(defaultValue = "60") int durationMinutes,
-                                      @RequestParam(required = false) Long floorId) {
+                                      @RequestParam(defaultValue = "60") Integer durationMinutes,
+                                      @RequestParam(required = false) Long floorId,
+                                      // optional filters coming from search.html
+                                      @RequestParam(required = false) Integer minCapacity,
+                                      @RequestParam(required = false, defaultValue = "false") boolean hasWhiteboard,
+                                      @RequestParam(required = false) Integer minTv) {
 
         LocalDateTime start = LocalDateTime.of(date, time);
-        LocalDateTime end = start.plusMinutes(durationMinutes);
+        LocalDateTime end = start.plusMinutes(durationMinutes != null ? durationMinutes : 60);
 
+        // Base availability query
         List<Room> available = reservationService.findAvailableRooms(start, end, floorId);
-        model.addAttribute("availableRooms", available);
+
+        // Apply optional filters (null-safe)
+        List<Room> filtered = available.stream()
+                .filter(r -> (minCapacity == null) || (r.getCapacity() == null) || r.getCapacity() >= minCapacity)
+                .filter(r -> !hasWhiteboard || Boolean.TRUE.equals(r.getWhiteboard()))
+                .filter(r -> (minTv == null) || (r.getTvCount() == null) || r.getTvCount() >= minTv)
+                .toList();
+
+        model.addAttribute("availableRooms", filtered);
         model.addAttribute("date", date);
         model.addAttribute("time", time);
         model.addAttribute("durationMinutes", durationMinutes);
         model.addAttribute("floorId", floorId);
 
-        return "availability_results";
+        model.addAttribute("minCapacity", minCapacity);
+        model.addAttribute("hasWhiteboard", hasWhiteboard);
+        model.addAttribute("minTv", minTv);
+
+        return "availability_results"; // NOTE: plural file name
     }
 
     @PostMapping("/book")
@@ -63,8 +81,12 @@ public class AvailabilityController {
         LocalDateTime start = LocalDateTime.of(date, time);
         LocalDateTime end = start.plusMinutes(durationMinutes);
 
-        var booking = reservationService.book(roomId, start, end,
-                principal != null ? principal.getName() : "Guest");
+        var booking = reservationService.book(
+                roomId,
+                start,
+                end,
+                principal != null ? principal.getName() : "Guest"
+        );
 
         return "redirect:/bookings/confirm/" + booking.getId();
     }

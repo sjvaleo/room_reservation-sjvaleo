@@ -1,52 +1,67 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <title>Available Rooms</title>
-    <meta charset="UTF-8"/>
+  <meta charset="UTF-8"/>
+  <title>Available Rooms • Room Reservation</title>
+  <link rel="stylesheet" th:href="@{/styles.css}" />
 </head>
-<body>
-<h1>Available Rooms</h1>
+<body class="container">
+  <div class="page">
 
-<p>
-  <strong th:text="${date}">DATE</strong>,
-  <span th:text="${time}">TIME</span> for
-  <span th:text="${durationMinutes}">60</span> minutes
-</p>
+    <th:block th:replace="~{fragments :: site_header}"></th:block>
 
-<div th:if="${#lists.isEmpty(availableRooms)}">
-    <p>No rooms are available for that time. <a th:href="@{/availability}">Search again</a>.</p>
-</div>
+    <section class="section subtle">
+      <h2>Available Rooms</h2>
+      <p class="meta" style="margin-top:6px;">
+        <strong th:text="${date}">DATE</strong>,
+        <span th:text="${time}">TIME</span> for
+        <span th:text="${durationMinutes != null ? durationMinutes : 60}">60</span> minutes
+      </p>
+    </section>
 
-<table th:if="${!#lists.isEmpty(availableRooms)}" border="1" cellpadding="6">
-    <thead>
-    <tr>
-        <th>Room</th>
-        <th>Capacity</th>
-        <th>TVs</th>
-        <th>Whiteboard</th>
-        <th>Book</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="r : ${availableRooms}">
-        <td th:text="${r.name}">Room Name</td>
-        <td th:text="${r.capacity}">0</td>
-        <td th:text="${r.tvCount}">0</td>
-        <td th:text="${r.hasWhiteboard} ? 'Yes' : 'No'">Yes</td>
-        <td>
-            <form th:action="@{/book}" method="post" style="display:inline;">
-                <input type="hidden" name="roomId" th:value="${r.id}"/>
-                <input type="hidden" name="date" th:value="${date}"/>
-                <input type="hidden" name="time" th:value="${time}"/>
-                <input type="hidden" name="durationMinutes" th:value="${durationMinutes}"/>
-                <input type="text" name="bookedBy" placeholder="Your name (optional)"/>
-                <button type="submit">Book</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+    <section class="section" th:if="${#lists.isEmpty(availableRooms)}">
+      <p>No rooms match your criteria.</p>
+      <p style="margin-top:8px;">
+        <a class="btn" th:href="@{/availability}">Change search</a>
+        <a class="btn" th:href="@{/}">Home</a>
+      </p>
+    </section>
 
-<p><a th:href="@{/availability}">← Change search</a> | <a th:href="@{/}">Home</a></p>
+    <section class="section" th:if="${!#lists.isEmpty(availableRooms)}">
+      <div class="grid">
+        <div class="card" th:each="r : ${availableRooms}">
+          <div class="title">
+            <a th:href="@{'/rooms/' + ${r.id}}"
+               th:text="${r.name}"
+               style="text-decoration:none; color:inherit;">Room</a>
+          </div>
+          <div class="meta" style="margin-top:4px;">
+            <span th:text="${'Capacity: ' + r.capacity}">0</span> •
+            <span th:text="${'TVs: ' + (r.tvCount == null ? 0 : r.tvCount)}">0</span> •
+            <span th:text="${r.whiteboard ? 'Whiteboard' : 'No Whiteboard'}">WB</span>
+          </div>
+          <form th:action="@{/book}" method="post" class="form" style="margin-top:10px;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" name="roomId" th:value="${r.id}" />
+            <input type="hidden" name="date" th:value="${date}" />
+            <input type="hidden" name="time" th:value="${time}" />
+            <input type="hidden" name="durationMinutes" th:value="${durationMinutes}" />
+            <label>Booked by (optional)
+              <input type="text" name="bookedBy" placeholder="Your name" />
+            </label>
+            <div class="nav" style="justify-content:flex-end">
+              <button type="submit" class="btn btn-primary">Book</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="nav" style="margin-top:12px;">
+        <a class="btn" th:href="@{/availability}">Change search</a>
+        <a class="btn" th:href="@{/}">Home</a>
+      </div>
+    </section>
+
+  </div>
 </body>
 </html>

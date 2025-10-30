@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DataLoader {
 
-
   @Bean
   CommandLineRunner seed(BuildingRepository bRepo,
                          FloorRepository fRepo,
@@ -21,10 +20,9 @@ public class DataLoader {
 
       // ----- Building -----
       Building b = new Building();
-      b.setName("Luddy'");
+      b.setName("Luddy");
       bRepo.save(b);
 
-    
       int[] roomsPerFloor = {12, 13, 11, 10};
 
       for (int fNum = 1; fNum <= 4; fNum++) {
@@ -38,7 +36,7 @@ public class DataLoader {
         int totalRooms = roomsPerFloor[fNum - 1];
 
         // rooms either have 1 / 2 whiteboards
-        int noWhiteboardCount = (fNum % 2 == 0) ? 2 : 1; 
+        int noWhiteboardCount = (fNum % 2 == 0) ? 2 : 1;
 
         for (int i = 1; i <= totalRooms; i++) {
           Room r = new Room();
@@ -47,8 +45,7 @@ public class DataLoader {
           String roomName = "F" + fNum + "-" + String.format("%02d", i);
           r.setName(roomName);
 
-          // Capacity: random spread between 6 and 80
-          // Distributes across the range for variety within each floor
+          // Capacity: spread between 6 and 80
           int capMin = 6, capMax = 80;
           int capRange = capMax - capMin;
           int capacity = capMin + ((i - 1) * Math.max(1, capRange / Math.max(1, totalRooms - 1)));
@@ -69,8 +66,6 @@ public class DataLoader {
           rRepo.save(r);
         }
       }
-
-    
     };
   }
 }

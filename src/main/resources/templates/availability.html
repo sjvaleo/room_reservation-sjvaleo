@@ -1,39 +1,41 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Find a Room</title>
-    <meta charset="UTF-8"/>
+  <title>Find a Room</title>
+  <meta charset="UTF-8"/>
+  <link rel="stylesheet" th:href="@{/styles.css}" />
 </head>
-<body>
-<h1>Find a Room</h1>
+<body class="container">
+  <div class="page">
 
-<form th:action="@{/availability/results}" method="post">
-    <div>
-        <label>Date</label>
-        <input type="date" name="date" required/>
-    </div>
+    <th:block th:replace="~{fragments :: site_header}"></th:block>
 
-    <div>
-        <label>Start Time</label>
-        <input type="time" name="time" required/>
-    </div>
-
-    <div>
-        <label>Duration (minutes)</label>
-        <input type="number" name="durationMinutes" min="15" step="15" value="60" required/>
-    </div>
-
-    <div>
-        <label>Floor (optional)</label>
-        <select name="floorId">
+    <section class="section">
+      <h1>Find a Room</h1>
+      <form th:action="@{/availability/results}" method="get" class="form" style="margin-top:12px;">
+        <div>
+          <label>Date</label>
+          <input type="date" name="date" required/>
+        </div>
+        <div>
+          <label>Start Time</label>
+          <input type="time" name="time" required/>
+        </div>
+        <div>
+          <label>Duration (minutes)</label>
+          <input type="number" name="durationMinutes" min="15" step="15" value="60" required/>
+        </div>
+        <div>
+          <label>Floor (optional)</label>
+          <select name="floorId">
             <option th:value="${null}">Any floor</option>
             <option th:each="f : ${floors}" th:value="${f.id}" th:text="${f.name}">Floor</option>
-        </select>
-    </div>
+          </select>
+        </div>
+        <button type="submit" class="btn">Search</button>
+      </form>
+    </section>
 
-    <button type="submit">Search</button>
-</form>
-
-<p><a th:href="@{/}">← Home</a></p>
+  </div>
 </body>
 </html>

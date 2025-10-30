@@ -2,6 +2,7 @@ package edu.p566.roomreservation.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -14,32 +15,40 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain web(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/search", "/floors", "/rooms/**",
-                                 "/css/**", "/styles.css", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                .requestMatchers("/book", "/bookings/**").authenticated()
-                .anyRequest().permitAll()
+                .requestMatchers(
+                    "/", "/search",
+                    "/availability", "/availability/**",
+                    "/rooms/**", "/floors/**",
+                    "/login"
+                ).permitAll()
+                .requestMatchers(
+                    "/styles.css", "/favicon.ico", "/images/**", "/js/**", "/css/**", "/webjars/**"
+                ).permitAll()
+                .anyRequest().authenticated()
             )
-            .formLogin(form -> form
-                .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/search", false)
+            .formLogin(login -> login
+                .loginPage("/login")
+                .defaultSuccessUrl("/search", true)  // after login, go to search
+                .failureUrl("/login?error")
+                .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/search")
-                .invalidateHttpSession(true)
+                .logoutSuccessUrl("/")
                 .deleteCookies("JSESSIONID")
                 .permitAll()
-            );
+            )
+            .csrf(Customizer.withDefaults());
+
         return http.build();
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        // Simple in-memory users for demo. Username: user  Password: password
-        var user = User.withUsername("user").password("{noop}password").roles("USER").build();
+        var user  = User.withUsername("user").password("{noop}password").roles("USER").build();
         var admin = User.withUsername("admin").password("{noop}password").roles("USER","ADMIN").build();
         return new InMemoryUserDetailsManager(user, admin);
     }

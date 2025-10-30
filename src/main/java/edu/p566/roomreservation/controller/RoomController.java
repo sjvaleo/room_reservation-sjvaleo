@@ -1,32 +1,47 @@
 package edu.p566.roomreservation.controller;
 
+import edu.p566.roomreservation.entity.Floor;
 import edu.p566.roomreservation.entity.Room;
+import edu.p566.roomreservation.repo.FloorRepository;
 import edu.p566.roomreservation.repo.RoomRepository;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Controller
 @RequestMapping("/rooms")
 public class RoomController {
-  private final RoomRepository rooms;
 
-  public RoomController(RoomRepository rooms) {
+  private final RoomRepository rooms;
+  private final FloorRepository floors;
+
+  public RoomController(RoomRepository rooms, FloorRepository floors) {
     this.rooms = rooms;
+    this.floors = floors;
   }
 
+  /** List rooms on a specific floor */
   @GetMapping("/by-floor/{floorId}")
+  @Transactional(readOnly = true)
   public String byFloor(@PathVariable Long floorId, Model model) {
-    model.addAttribute("rooms", rooms.findByFloorIdOrderByNameAsc(floorId));
+    Floor floor = floors.findById(floorId).orElseThrow(() ->
+        new IllegalArgumentException("Floor not found: " + floorId));
+
+    List<Room> list = rooms.findByFloor_IdOrderByNameAsc(floorId);
+    model.addAttribute("rooms", list);
     model.addAttribute("floorId", floorId);
+    model.addAttribute("title", floor.getName() != null ? floor.getName() : ("Rooms on Floor " + floorId));
     return "rooms";
   }
 
+  /** Room details (unchanged behavior) */
   @GetMapping("/{id}")
   public String details(@PathVariable Long id,
                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -36,6 +51,7 @@ public class RoomController {
                         @RequestParam(required = false, defaultValue = "false") boolean needsTv,
                         @RequestParam(required = false, defaultValue = "false") boolean needsWhiteboard,
                         Model model) {
+
     Room room = rooms.findById(id).orElseThrow();
 
     Integer durationMinutes = null;

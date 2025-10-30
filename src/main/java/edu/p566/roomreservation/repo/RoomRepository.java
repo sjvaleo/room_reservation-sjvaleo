@@ -5,9 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface RoomRepository extends JpaRepository<Room, Long> {
-  List<Room> findByFloorIdOrderByNameAsc(Long floorId);
+
+    
+    List<Room> findByFloor_IdOrderByNameAsc(Long floorId);
 }
-
-
-
-
