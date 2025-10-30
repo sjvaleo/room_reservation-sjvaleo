@@ -5,13 +5,9 @@
 .idea
 *.iml
 
-# Build
+# Build artifacts & caches
 target
 .mvn/wrapper/maven-wrapper.jar
 
-
-# SAVE
-
-reservation.db
-
+# Node stuff
 node_modules
