@@ -1,0 +1,17 @@
+# Git & IDE
+.git
+.gitignore
+.vscode
+.idea
+*.iml
+
+# Build
+target
+.mvn/wrapper/maven-wrapper.jar
+
+
+# SAVE
+
+reservation.db
+
+node_modules
