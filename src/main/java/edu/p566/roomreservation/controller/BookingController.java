@@ -11,7 +11,6 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 
 @Controller
 @RequestMapping("/bookings")
@@ -25,31 +24,40 @@ public class BookingController {
 
     @GetMapping
     public String myBookings(Model model, Principal principal) {
-        String who = principal.getName();
-        List<Reservation> mine = reservationRepo.findAllByBookedByOrderByStartDateTimeDesc(who);
-        model.addAttribute("bookings", mine);
+        String who = (principal != null ? principal.getName() : "Guest");
         model.addAttribute("who", who);
+        if (principal != null) {
+            model.addAttribute("bookings", reservationRepo.findAllByBookedByOrderByStartDateTimeDesc(who));
+        }
         return "bookings";
     }
 
-    @GetMapping("/confirm/{id}")
-    public String confirm(@PathVariable Long id, Model model, Principal principal) {
+    @GetMapping("/{id}")
+    public String bookingDetail(@PathVariable Long id, Model model, Principal principal) {
         Reservation b = reservationRepo.findById(id).orElseThrow();
-        if (principal == null || !b.getBookedBy().equals(principal.getName())) throw new IllegalArgumentException("Unauthorized");
+        requireOwnerOrGuest(b, principal);
+
+        // Pre-fill the edit form values so users don't retype them
+        LocalDate date = b.getStartDateTime().toLocalDate();
+        LocalTime time = b.getStartDateTime().toLocalTime();
+        int durationMinutes = (int) java.time.Duration.between(
+                b.getStartDateTime(), b.getEndDateTime()
+        ).toMinutes();
+
         model.addAttribute("booking", b);
-        return "booking_confirm";
+        model.addAttribute("date", date);
+        model.addAttribute("time", time);
+        model.addAttribute("durationMinutes", durationMinutes);
+
+        return "booking_detail";
     }
 
-    @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model, Principal principal) {
+    @GetMapping("/confirm/{id}")
+    public String bookingConfirm(@PathVariable Long id, Model model, Principal principal) {
         Reservation b = reservationRepo.findById(id).orElseThrow();
-        if (principal == null || !b.getBookedBy().equals(principal.getName())) throw new IllegalArgumentException("Unauthorized");
+        requireOwnerOrGuest(b, principal);
         model.addAttribute("booking", b);
-        model.addAttribute("date", b.getStartDateTime().toLocalDate());
-        model.addAttribute("time", b.getStartDateTime().toLocalTime());
-        int duration = (int) java.time.Duration.between(b.getStartDateTime(), b.getEndDateTime()).toMinutes();
-        model.addAttribute("durationMinutes", duration);
-        return "booking_detail";
+        return "booking_confirm";
     }
 
     @PostMapping("/{id}/update")
@@ -58,13 +66,21 @@ public class BookingController {
                          @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime time,
                          @RequestParam int durationMinutes,
                          Principal principal) {
+
         Reservation b = reservationRepo.findById(id).orElseThrow();
-        if (principal == null || !b.getBookedBy().equals(principal.getName())) throw new IllegalArgumentException("Unauthorized");
+        requireOwnerOrGuest(b, principal);
+
         LocalDateTime start = LocalDateTime.of(date, time);
         LocalDateTime end = start.plusMinutes(durationMinutes);
-        boolean conflict = reservationRepo.existsByRoomAndIdNotAndStartDateTimeLessThanAndEndDateTimeGreaterThan(
-                b.getRoom(), b.getId(), end, start);
-        if (conflict) throw new IllegalStateException("That time conflicts with another booking for this room.");
+
+        boolean conflict = reservationRepo
+                .existsByRoomAndIdNotAndStartDateTimeLessThanAndEndDateTimeGreaterThan(
+                        b.getRoom(), b.getId(), end, start);
+
+        if (conflict) {
+            throw new IllegalStateException("That time conflicts with another booking for this room.");
+        }
+
         b.setStartDateTime(start);
         b.setEndDateTime(end);
         reservationRepo.save(b);
@@ -74,8 +90,19 @@ public class BookingController {
     @PostMapping("/{id}/cancel")
     public String cancel(@PathVariable Long id, Principal principal) {
         Reservation b = reservationRepo.findById(id).orElseThrow();
-        if (principal == null || !b.getBookedBy().equals(principal.getName())) throw new IllegalArgumentException("Unauthorized");
+        requireOwnerOrGuest(b, principal);
         reservationRepo.delete(b);
         return "redirect:/bookings";
+    }
+
+    private void requireOwnerOrGuest(Reservation b, Principal principal) {
+        String owner = b.getBookedBy();
+        String user = (principal != null ? principal.getName() : null);
+
+        if (owner == null) return;
+        if ("Guest".equalsIgnoreCase(owner)) return;
+        if (user != null && owner.equals(user)) return;
+
+        throw new IllegalArgumentException("Unauthorized");
     }
 }
